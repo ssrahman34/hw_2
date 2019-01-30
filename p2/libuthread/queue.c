@@ -4,28 +4,53 @@
 
 #include "queue.h"
 
+
+
 struct queue {
 	/* TODO Phase 1 */
+	int front;
+	int rear;
+	int size;
+	int capacity;
+	int *array;
 };
 
 queue_t queue_create(void)
 {
-	/* TODO Phase 1 */
+	
+	struct queue* queue = (struct Queue*) malloc(sizeof(struct queue));
+	queue->front = 0;
+	queue->size = 0;	
+	queue->capacity = 100;
+	queue->rear = queue->capacity  -1;
+	queue->array = (int*) malloc(queue->capacity  * sizeof(int));
+	return queue;
 }
 
 int queue_destroy(queue_t queue)
 {
-	/* TODO Phase 1 */
+	delete(queue->array);
+	delete(queue);
 }
 
 int queue_enqueue(queue_t queue, void *data)
 {
-	/* TODO Phase 1 */
+	if (queue->size == queue->capacity) 
+		return; 
+    if(queue->rear == queue->capacity -1 ){
+		queue->rear = -1;
+	} 
+	queue->rear = queue->rear +1;
+    queue->array[queue->rear] = data; 
+    queue->size += 1; 
+    printf("%d enqueued to queue\n", data);
+
 }
 
 int queue_dequeue(queue_t queue, void **data)
 {
 	/* TODO Phase 1 */
+
 }
 
 int queue_delete(queue_t queue, void *data)
