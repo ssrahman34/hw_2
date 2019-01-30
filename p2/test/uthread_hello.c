@@ -11,7 +11,7 @@
 
 int hello(void* arg)
 {
-	printf("Hello world!\n");
+	printf("Hello sarah and world!\n");
 	return 0;
 }
 
