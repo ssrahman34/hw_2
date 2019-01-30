@@ -18,7 +18,7 @@ struct queue {
 queue_t queue_create(void)
 {
 	
-	struct queue* queue = (struct Queue*) malloc(sizeof(struct queue));
+	struct queue* queue = (struct queue*) malloc(sizeof(struct queue));
 	queue->front = 0;
 	queue->size = 0;	
 	queue->capacity = 100;
@@ -29,21 +29,22 @@ queue_t queue_create(void)
 
 int queue_destroy(queue_t queue)
 {
-	delete(queue->array);
-	delete(queue);
+	// delete(queue->array);
+	// delete(queue);
+	return 0;
 }
 
 int queue_enqueue(queue_t queue, void *data)
 {
 	if (queue->size == queue->capacity) 
-		return; 
+		return -1; 
     if(queue->rear == queue->capacity -1 ){
 		queue->rear = -1;
 	} 
 	queue->rear = queue->rear +1;
-    queue->array[queue->rear] = data; 
+    // queue->array[queue->rear] = *data; //HOW DO WE FIX THIS?
     queue->size += 1; 
-    printf("%d enqueued to queue\n", data);
+    return 0;
 
 }
 
@@ -51,20 +52,24 @@ int queue_dequeue(queue_t queue, void **data)
 {
 	/* TODO Phase 1 */
 
+	return 0;
 }
 
 int queue_delete(queue_t queue, void *data)
 {
 	/* TODO Phase 1 */
+	return 0;
 }
 
 int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 {
 	/* TODO Phase 1 */
+	return 0;
 }
 
 int queue_length(queue_t queue)
 {
 	/* TODO Phase 1 */
+	return 0;
 }
 
