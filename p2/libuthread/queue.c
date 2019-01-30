@@ -50,7 +50,20 @@ int queue_enqueue(queue_t queue, void *data)
 
 int queue_dequeue(queue_t queue, void **data)
 {
-	/* TODO Phase 1 */
+	if(queue == NULL || data == NULL){
+		return -1;
+	}
+	for(int i = 0; i < queue->size; i++){
+		if (queue->array[i] == *data){
+			queue->size = queue->size -1;
+			for(int j = 0; j < queue->size;j++){
+				queue->array[i]	= queue->array[i+1];
+				queue->rear = queue->rear -1;
+			}
+			return 0;
+		}//we found data
+	}
+	return -1;
 
 	return 0;
 }
@@ -58,7 +71,11 @@ int queue_dequeue(queue_t queue, void **data)
 int queue_delete(queue_t queue, void *data)
 {
 	/* TODO Phase 1 */
-	return 0;
+
+	for(int i = 0; i < queue->size; i++){	
+		//call queue delete
+	}
+
 }
 
 int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
@@ -69,6 +86,7 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 
 int queue_length(queue_t queue)
 {
+
 	/* TODO Phase 1 */
 	return 0;
 }
