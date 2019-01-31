@@ -49,6 +49,11 @@ int queue_enqueue(queue_t queue, void *data)
 
 int queue_dequeue(queue_t queue, void **data)
 {
+	*data = queue->array[queue->front];
+	queue->front = queue->front + 1;
+	if(queue->front == queue->capacity){
+		queue->front = -1;
+	}
 	return 0;
 }
 
@@ -60,10 +65,12 @@ int queue_delete(queue_t queue, void *data)
 	for(int i = 0; i < queue->size; i++){
 		if (queue->array[i] == data){
 			queue->size = queue->size -1;
-			for(int j = 0; j < queue->size;j++){
+			for(int j = i; j < queue->size;j++){
 				queue->array[i]	= queue->array[i+1];
+				
 				queue->rear = queue->rear -1;
 			}
+			queue->array[queue->size] = NULL;
 			return 0;
 		}//we found data
 	}
