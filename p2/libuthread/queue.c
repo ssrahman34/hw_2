@@ -4,55 +4,61 @@
 
 #include "queue.h"
 
-
+struct Node{
+	int key;
+	struct Node *next; //pointer to next node
+};
 
 struct queue {
-	int front;
-	int rear;
-	int size;
-	int capacity;
-	int **array; //a list of pointers...
+	struct Node *front, *rear;
 };
 
 queue_t queue_create(void)
 {
 	
 	struct queue* queue = (struct queue*) malloc(sizeof(struct queue));
-	queue->front = 0;
-	queue->size = 0;	
-	queue->capacity = 100;
-	queue->rear = queue->capacity  -1;
-	queue->array = (int**) malloc(queue->capacity  * sizeof(void*));
+	queue->front = NULL;
+	queue->rear = NULL;  
 	return queue;
 }
 
 int queue_destroy(queue_t queue)
 {
-	// delete(queue->array);
-	// delete(queue);
+	if(queue == NULL || queue_length(queue) != 0){
+		return -1;
+	}
+	struct Node* curr= queue->front;
+	struct Node* next;
+	while(curr != NULL){
+		next = curr->next;
+		free(curr);
+		curr = curr->next;
+	}//free the nodes in the quque
+	free(queue);
 	return 0;
 }
 
 int queue_enqueue(queue_t queue, void *data)
 {
-	if (queue->size == queue->capacity) 
+	if (queue->rear == NULL) 
 		return -1; 
-    if(queue->rear == queue->capacity -1 ){
-		queue->rear = -1;
-	} 
-	queue->rear = queue->rear +1;
-    queue->array[queue->rear] = data; //data will be a pointer to the address
-    queue->size += 1; 
+    struct Node *temp = (struct Node*) malloc(sizeof(struct Node));
+	temp = data; //assign data node to temp....
+	queue->rear->next = temp;
+	queue->rear = temp;
     return 0;
 
 }
 
 int queue_dequeue(queue_t queue, void **data)
 {
-	*data = queue->array[queue->front];
-	queue->front = queue->front + 1;
-	if(queue->front == queue->capacity){
-		queue->front = -1;
+	if(queue == NULL || data == NULL || queue_length(queue) == 0 || queue->front == NULL){
+		return -1;
+	}
+	
+	queue->front = queue->front->next;
+	if(queue->front == NULL){
+		queue->rear=NULL;
 	}
 	return 0;
 }
@@ -62,31 +68,46 @@ int queue_delete(queue_t queue, void *data)
 	if(queue == NULL || data == NULL){
 		return -1;
 	}
-	for(int i = 0; i < queue->size; i++){
-		if (queue->array[i] == data){
-			queue->size = queue->size -1;
-			for(int j = i; j < queue->size;j++){
-				queue->array[i]	= queue->array[i+1];
-				
-				queue->rear = queue->rear -1;
-			}
-			queue->array[queue->size] = NULL;
+	struct Node *curr = queue->front;
+	while(curr->next != NULL){
+		if(curr->next == data){
+			struct Node *temp = curr->next;
+			curr->next = curr->next->next;
+			delete(temp);
 			return 0;
-		}//we found data
+		}
+		curr = curr->next;
 	}
-	return -1;
+	return -1; //data was not found in queue
 }
 
 int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 {
-	// for(int i = 0; i < queue->size; i++){
-	// 	//queue[i]
-	// }
+	if(queue==NULL || func == NULL){
+		return -1;
+	}
+	struct Node *curr = queue->front;
+	//void (*ptr)() = &func; //this is the function to call
+	int retVal;
+	while(curr!= NULL){
+		data = func(curr, arg); //the result of the function call???
+		// Do we need to iterate through data? is is *data in func
+		curr=curr->next;
+	}
 	return 0;
 }
 
 int queue_length(queue_t queue)
 {
-	return 0;
+	if(queue == NULL){
+		return -1;
+	}
+	int len = 0;
+	struct Node* curr = queue->front;
+	while(curr != NULL){
+		len++;
+		curr = curr->next;
+	}
+	return len;
 }
 
