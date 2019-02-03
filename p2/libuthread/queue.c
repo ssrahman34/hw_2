@@ -1,11 +1,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
 #include "queue.h"
 
 struct Node{
-	int key;
+	void* key;
 	struct Node *next; //pointer to next node
 };
 
@@ -40,10 +40,12 @@ int queue_destroy(queue_t queue)
 
 int queue_enqueue(queue_t queue, void *data)
 {
-	if (queue->rear == NULL) 
-		return -1; 
-    struct Node *temp = (struct Node*) malloc(sizeof(struct Node));
-	temp = data; //assign data node to temp....
+	struct Node *temp = (struct Node*) malloc(sizeof(struct Node));
+	temp->key = data;//this might be a problem //might need to make key a *
+	if (queue->rear == NULL){
+		queue->front = queue->rear = temp;		
+		return 0;
+	} 
 	queue->rear->next = temp;
 	queue->rear = temp;
     return 0;
@@ -70,10 +72,10 @@ int queue_delete(queue_t queue, void *data)
 	}
 	struct Node *curr = queue->front;
 	while(curr->next != NULL){
-		if(curr->next == data){
+		if(curr->next->key == data){
 			struct Node *temp = curr->next;
 			curr->next = curr->next->next;
-			delete(temp);
+			free(temp); //delete
 			return 0;
 		}
 		curr = curr->next;
@@ -102,12 +104,24 @@ int queue_length(queue_t queue)
 	if(queue == NULL){
 		return -1;
 	}
-	int len = 0;
+	if(queue->front == NULL){
+		return 0; //we have an empty queue
+	}
+	int length = 1;
 	struct Node* curr = queue->front;
-	while(curr != NULL){
-		len++;
+	while(curr != queue->rear){
+		length++;
 		curr = curr->next;
 	}
-	return len;
+	//length = count(queue->front);
+	return length;
 }
+
+/*int count(struct Node* head){
+ if (head == NULL) 
+        return 0; 
+  
+    // count is 1 + count of remaining list 
+    return 1 + count(head->next); 
+}*/
 
