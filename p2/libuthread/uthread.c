@@ -32,7 +32,21 @@ typedef enum{
 
 
 void uthread_yield(void)
-{
+{//look for next available thread!
+	struct Node *curr = q->front;
+	while(curr->next != NULL){
+		struct thread_struct* prev_struct =  (struct thread_struct*)curr->key;	
+		struct thread_struct* curr_struct =  (struct thread_struct*)curr->next->key;
+		if(curr_struct->state == Ready){
+			//prev_struct is what we switch from
+			//curr_struct will be the next threat we switch to 
+			uthread_ctx_switch(prev_struct, curr_struct);
+			curr_struct->state = Running;
+			prev_struct->state = Blocked;
+		}
+		curr=curr->next;
+	}//while loops
+
 	/* TODO Phase 2 */
 }
 
@@ -59,7 +73,7 @@ int uthread_create(uthread_func_t func, void *arg)
 		ts->TID = num_threads;
 		ts->state = 2; //assign to read?
 		ts->stack = top_of_stack; //assign stack
-
+		
 		queue_enqueue(q, ts); //add the struct to the queue
 		return ts->TID;
 	}
@@ -91,7 +105,7 @@ int main_thread(uthread_func_t func, void *arg)
 	ts->state = 1; //assign to read?
 	ts->stack = top_of_stack; //assign stack
 	q = queue_create();
-
+	
 	queue_enqueue(q, ts); //add the struct to the queue
 	return 0; //return TID
 }
