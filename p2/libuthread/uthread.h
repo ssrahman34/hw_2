@@ -1,21 +1,6 @@
 #ifndef _UTHREAD_H
 #define _UTHREAD_H
 
-int num_threads = 0;
-typedef struct{
-   uthread_t TID;
-    State state;
-    int registers[20];
-    int *stack;
-}thread_struct; 
-
-typedef enum{
-    Blocked = 0,
-    Running = 1,
-    Ready = 2,
-    Zombie = 3
-}State;
-
 /*
  * uthread_t - Thread identifier (TID) type
  *
