@@ -92,8 +92,17 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 	//void (*ptr)() = &func; //this is the function to call
 	int retVal;
 	while(curr!= NULL){
-		data = func(curr, arg); //the result of the function call???
+		retVal = func(curr, arg); //the result of the function call???
 		// Do we need to iterate through data? is is *data in func
+		if(retVal == 1){
+			if(data == NULL){
+				return -1;
+			}
+			else{
+				data = retVal;//data received the data item where iteration stoped
+				break;
+			}
+		}
 		curr=curr->next;
 	}
 	return 0;

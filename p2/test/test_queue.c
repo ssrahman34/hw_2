@@ -6,6 +6,30 @@
 #include "../libuthread/queue.h"
 #include "../libuthread/queue.c"
 
+void test_iterator(void)
+{
+    queue_t q;
+    int data[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    int i;
+    int *ptr;
+
+    q = queue_create();
+    for (i = 0; i < sizeof(data) / sizeof(data[0]); i++)
+        queue_enqueue(q, &data[i]);
+
+    queue_iterate(q, inc_item, (void*)1, NULL);
+    assert(data[0] == 2);
+
+    ptr = NULL;
+    queue_iterate(q, find_item, (void*)5, (void**)&ptr);
+    assert(ptr != NULL);
+    assert(*ptr == 5);
+    assert(ptr == &data[3]);
+}
+
+
+
+
 int main(){
 
         struct queue* q = queue_create();
@@ -30,8 +54,9 @@ int main(){
 	int** d;
 	queue_dequeue(q,&d);
 	printf("SIZE should decrement: %d\n", queue_length(q));
-	printf("%d %d %d %d\n", q->front->key, q->front->next->key, q->front->next->next->key ,q->front->next->next->next->key);//note apparently our queue is circular....
-	printf("%d", q->rear->key);
 
+		printf("%d %d %d %d\n", q->front->key, q->front->next->key, q->front->next->next->key ,q->front->next->next->next->key);//note apparently our queue is circular....
+	printf("%d", q->rear->key);
+	test_iterator();
         return 0;
 }
