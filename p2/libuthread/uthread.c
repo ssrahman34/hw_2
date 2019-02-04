@@ -10,8 +10,11 @@
 #include "preempt.h"
 #include "queue.h"
 #include "uthread.h"
+#include "queue.h"
+#include "queue.c"
 
 int num_threads = 0;
+struct queue* q;
 
 typedef struct thread_struct{
 	uthread_t TID;
@@ -41,7 +44,7 @@ uthread_t uthread_self(void)
 int uthread_create(uthread_func_t func, void *arg)
 {
 	if(num_threads == 0){
-		main_thread();
+		main_thread(func, arg);
 	}
 	else{
 		ucontext_t *thread;
@@ -52,12 +55,13 @@ int uthread_create(uthread_func_t func, void *arg)
 			return -1;
 		}
 		num_threads++; //increment thread number
-		thread_struct ts;
-		ts.TID = num_threads;
-		ts.state = 2; //assign to read?
-		ts.stack = top_of_stack; //assign stack
+		thread_struct* ts;
+		ts->TID = num_threads;
+		ts->state = 2; //assign to read?
+		ts->stack = top_of_stack; //assign stack
 
-		return uthread_self();
+		queue_enqueue(q, ts); //add the struct to the queue
+		return ts->TID;
 	}
 }
 
@@ -82,11 +86,13 @@ int main_thread(uthread_func_t func, void *arg)
 		return -1;
 	}
 	num_threads++; //increment thread number
-	thread_struct ts;
-	ts.TID = num_threads;
-	ts.state = 2; //assign to read?
-	ts.stack = top_of_stack; //assign stack
+	thread_struct* ts;
+	ts->TID = num_threads;
+	ts->state = 1; //assign to read?
+	ts->stack = top_of_stack; //assign stack
+	q = queue_create();
 
-	return uthread_self(); //return TID
+	queue_enqueue(q, ts); //add the struct to the queue
+	return 0; //return TID
 }
 
