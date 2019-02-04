@@ -1,7 +1,7 @@
 #ifndef _UTHREAD_H
 #define _UTHREAD_H
 
-
+int num_threads = 0;
 typedef struct{
    uthread_t TID;
     State state;

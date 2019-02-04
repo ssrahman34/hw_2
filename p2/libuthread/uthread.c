@@ -11,7 +11,22 @@
 #include "queue.h"
 #include "uthread.h"
 
-/* TODO Phase 2 */
+int num_threads = 0;
+
+typedef struct{
+   uthread_t TID;
+    State state;
+    int registers[20];
+    int *stack;
+}thread_struct; 
+
+typedef enum{
+    Blocked = 0,
+    Running = 1,
+    Ready = 2,
+    Zombie = 3
+}State;
+
 
 void uthread_yield(void)
 {
@@ -20,7 +35,7 @@ void uthread_yield(void)
 
 uthread_t uthread_self(void)
 {
-	/* TODO Phase 2 */
+	
 }
 
 int uthread_create(uthread_func_t func, void *arg)
@@ -28,9 +43,16 @@ int uthread_create(uthread_func_t func, void *arg)
 	ucontext_t *thread;
 	void *top_of_stack = uthread_ctx_alloc_stack();
 	int retVal = uthread_ctx_init(thread, top_of_stack, func, arg);
+	
 	if (retVal== -1){
 		return -1;
 	}
+	num_threads++; //increment thread number
+	thread_struct ts;
+	ts.TID = num_threads;
+	ts.state = 2; //assign to read?
+	ts.stack = top_of_stack; //assign stack
+
 	return uthread_self(); //return TID
 }
 
