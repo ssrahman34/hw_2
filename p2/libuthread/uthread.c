@@ -103,8 +103,6 @@ int main_thread(uthread_func_t func, void *arg)
 	int retVal = uthread_ctx_init(thread, top_of_stack, func, arg);
 	printf(" %d retVAL", retVal);
 
-       	printf("reached after uthread init\n");	
-	printf(" %d NOW", retVal);
 	if (retVal == -1){
 		return -1;
 	}
