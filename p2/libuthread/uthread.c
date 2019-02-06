@@ -98,11 +98,14 @@ int main_thread(uthread_func_t func, void *arg)
 {
 	printf("reached main_thread\n");
 	uthread_ctx_t *thread;
-	int *top_of_stack = uthread_ctx_alloc_stack();
+	void *top_of_stack = uthread_ctx_alloc_stack();
+//printf("%ls\n",top_of_stack);
 	int retVal = uthread_ctx_init(thread, top_of_stack, func, arg);
- printf("reached after uthread init\n");	
-	printf(top_of_stack == NULL);
-	 if (retVal== -1){
+	printf(" %d retVAL", retVal);
+
+       	printf("reached after uthread init\n");	
+	printf(" %d NOW", retVal);
+	if (retVal == -1){
 		return -1;
 	}
 	printf("Did it return -1?");
