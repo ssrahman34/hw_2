@@ -18,6 +18,7 @@
 int num_threads = 0;
 struct queue* q;
 
+<<<<<<< HEAD
 typedef enum{
         Blocked = 0,
         Running = 1,
@@ -32,11 +33,11 @@ struct uthread_ctx_t{
 	int* stack;// = uthread_ctx_alloc_stack();
 };
 
-
 int main_thread(uthread_func_t func, void *arg);
 void uthread_yield(void)
 {//look for next available thread!
 	struct Node *curr = q->front;
+	struct Node *next;
 	while(curr->next != NULL){
 		struct uthread_ctx_t* prev_struct =  (struct uthread_ctx_t*)curr->key;	
 		struct uthread_ctx_t* curr_struct =  (struct uthread_ctx_t*)curr->next->key;
