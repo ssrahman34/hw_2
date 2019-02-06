@@ -19,16 +19,16 @@ int num_threads = 0;
 struct queue* q;
 
 typedef enum{
-        Blocked = 0,
-        Running = 1,
-        Ready = 2,
-        Zombie = 3
+        Blocked ,
+        Running ,
+        Ready ,
+        Zombie 
 }State;
 
-struct uthread_ctx_t{
+typedef struct thread{
 	uthread_t TID;
 	State state;
-	uthread_ctx_t registers;
+	uthread_ctx_t context;
 	int* stack;// = uthread_ctx_alloc_stack();
 };
 
@@ -38,8 +38,8 @@ void uthread_yield(void)
 	struct Node *curr = q->front;
 	struct Node *next;
 	while(curr->next != NULL){
-		struct uthread_ctx_t* prev_struct =  (struct uthread_ctx_t*)curr->key;	
-		struct uthread_ctx_t* curr_struct =  (struct uthread_ctx_t*)curr->next->key;
+		struct thread* prev_struct =  (struct thread*)curr->key;	
+		struct thread* curr_struct =  (struct thread*)curr->next->key;
 		if(curr_struct->state == Ready){
 			//prev_struct is what we switch from
 			//curr_struct will be the next threat we switch to 
@@ -65,21 +65,21 @@ int uthread_create(uthread_func_t func, void *arg)
 		main_thread(func, arg);
 	}
 	else{
-		uthread_ctx_t *thread;
+		struct thread *thread;
 		void *top_of_stack = uthread_ctx_alloc_stack();
-		int retVal = uthread_ctx_init(thread, top_of_stack, func, arg);
+		int retVal = uthread_ctx_init(&thread->context, top_of_stack, func, arg);
 	
 		if (retVal== -1){
 			return -1;
 		}
 		num_threads++; //increment thread number
-		struct uthread_ctx_t* ts;
-		ts->TID = num_threads;
-		ts->state = 2; //assign to read?
-		ts->stack = top_of_stack; //assign stack
 		
-		queue_enqueue(q, ts); //add the struct to the queue
-		return ts->TID;
+		thread->TID = num_threads;
+		thread->state = 2; //assign to read?
+		thread->stack = top_of_stack; //assign stack
+		
+		queue_enqueue(q, thread); //add the struct to the queue
+		return thread->TID;
 	}
 }
 
@@ -97,10 +97,10 @@ int uthread_join(uthread_t tid, int *retval)
 int main_thread(uthread_func_t func, void *arg)
 {
 	printf("reached main_thread\n");
-	uthread_ctx_t *thread;
+	struct thread *thread;
 	void *top_of_stack = uthread_ctx_alloc_stack();
 //printf("%ls\n",top_of_stack);
-	int retVal = uthread_ctx_init(thread, top_of_stack, func, arg);
+	int retVal = uthread_ctx_init(&thread->context, top_of_stack, func, arg);
 	printf(" %d retVAL", retVal);
 
 	if (retVal == -1){
@@ -108,13 +108,13 @@ int main_thread(uthread_func_t func, void *arg)
 	}
 	printf("Did it return -1?");
 	num_threads++; //increment thread number
-	struct uthread_ctx_t* ts;
-	ts->TID = num_threads;
-	ts->state = 1; //assign to read?
-	ts->stack = top_of_stack; //assign stack
+
+	thread->TID = num_threads;
+	thread->state = 1; //assign to read?
+	thread->stack = top_of_stack; //assign stack
 	q = queue_create();
 printf("Queue created\n");	
-	queue_enqueue(q, ts); //add the struct to the queue
+	queue_enqueue(q, thread); //add the struct to the queue
 	return 0; //return TID
 }
 
