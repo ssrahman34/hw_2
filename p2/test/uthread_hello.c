@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <uthread.h>
-
+//#include <../libuthread/uthread.h>
+#include "../libuthread/uthread.c"
+#include "../libuthread/uthread.h"
 int hello(void* arg)
 {
 	printf("Hello sarah and world!\n");
@@ -20,7 +21,7 @@ int main(void)
 	uthread_t tid;
 
 	tid = uthread_create(hello, NULL);
-	uthread_join(tid, NULL);
+	//uthread_join(tid, NULL);
 
 	return 0;
 }

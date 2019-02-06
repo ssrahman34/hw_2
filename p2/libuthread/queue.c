@@ -32,7 +32,7 @@ int queue_destroy(queue_t queue)
 	while(curr != NULL){
 		next = curr->next;
 		free(curr);
-		curr = curr->next;
+		curr = next;
 	}//free the nodes in the quque
 	free(queue);
 	return 0;
@@ -99,7 +99,7 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 				return -1;
 			}
 			else{
-				data = retVal;//data received the data item where iteration stoped
+			//	data = curr;//data received the data item where iteration stoped
 				break;
 			}
 		}
