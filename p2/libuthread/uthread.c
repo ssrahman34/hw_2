@@ -16,24 +16,20 @@
 int num_threads = 0;
 struct queue* q;
 
+typedef enum{ Blocked = 0, Running = 1, Ready = 2, Zombie = 3} State;
+
 typedef struct thread_struct{
 	uthread_t TID;
 	State state;
 	uthread_ctx_t registers;
-	int *stack = uthread_ctx_alloc_stack();
+	int *stack;
 }thread_struct; 
-
-typedef enum{
-	Blocked = 0,
-	Running = 1,
-	Ready = 2,
-	Zombie = 3
-}State;
 
 
 void uthread_yield(void)
 {//look for next available thread!
 	struct Node *curr = q->front;
+	struct Node *next;
 	while(curr->next != NULL){
 		struct thread_struct* prev_struct =  (struct thread_struct*)curr->key;	
 		struct thread_struct* curr_struct =  (struct thread_struct*)curr->next->key;
