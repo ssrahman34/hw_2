@@ -18,7 +18,6 @@
 int num_threads = 0;
 struct queue* q;
 
-<<<<<<< HEAD
 typedef enum{
         Blocked = 0,
         Running = 1,
@@ -102,7 +101,8 @@ int main_thread(uthread_func_t func, void *arg)
 	int *top_of_stack = uthread_ctx_alloc_stack();
 	int retVal = uthread_ctx_init(thread, top_of_stack, func, arg);
  printf("reached after uthread init\n");	
-	if (retVal== -1){
+	printf(top_of_stack == NULL);
+	 if (retVal== -1){
 		return -1;
 	}
 	printf("Did it return -1?");
