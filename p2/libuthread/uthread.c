@@ -156,10 +156,8 @@ int uthread_join(uthread_t tid, int *retval)
 
 	if(tid == 0){return -1;}
 
-
-	int done = 0;
+	int found =0;
 	int blocked = 0;
-while(done == 0){
 	struct Node *curr_zombie = zombie_queue->front;
 	struct Node *curr_q = q->front;
 	//struct Node *curr_blocked = blocked_queue->front;
@@ -167,6 +165,7 @@ while(done == 0){
 	while(curr_q != NULL){
 		struct thread* temp = curr_q->key; //get the struct
 		if(temp->TID == tid){
+			found = 1;
 			if(temp->is_joined == false){
 				blocked = 1;
 				temp->is_joined = true;
@@ -174,7 +173,7 @@ while(done == 0){
 				queue_enqueue(blocked_queue, running_thread);
 				temp->join_tid = running_thread->TID;//temp will use join_tid to figure which parent to unblock
 				uthread_yield();
-				printf("GOES IN IF\n");
+				break;
 			}
 			else{
 				return -1; 
@@ -183,32 +182,42 @@ while(done == 0){
 		curr_q = curr_q->next;
 	}
 
-	if(done == 0){
-		/*while(curr_blocked != NULL){
+		while(curr_blocked != NULL){
 			struct thread* temp_blocked = curr_blocked->key; //get the struct
 			if(temp_blocked->TID == tid){
 				found = 1;
 				if (temp->is_joined == false){
-				
-
+			 	blocked = 1;
+                                temp->is_joined = true;
+                                running_thread->state = Blocked; //block the running thead.
+                                queue_enqueue(blocked_queue, running_thread);
+                                temp->join_tid = running_thread->TID;//temp will use join_tid to figure which parent to unblock
+                                uthread_yield();
+				//delete child
+				break;	
 				}//if it hasnt been joined before
 				else{
 					return -1;
 				}
 			}
 			curr_blocked = curr_blocked->next;
-		}*/
+		}
 		while(curr_zombie != NULL){
 			struct thread* temp_zombie = curr_q->key;
 			if(temp_zombie->TID == tid){
-
-				if(retval != NULL)
-					*retval = running_thread->retVal;
-				//running_thread->retVal = retVal;//?
-				done = 1;
-				free(curr_zombie);
-				free(curr_q);
-				if(blocked == 1){
+				found = 1;
+				if (temp_zombie->is_joined == false){
+					temp_zombie->is_joined = true;
+					if(retval != NULL)
+                                        	*retval = temp_zombie->retVal;
+					done = 1;
+					free(curr_zombie);
+					free(curr_q);
+				}
+				else{
+					return -1;
+				}
+				//if(blocked == 1){
 					/*running_thread->state = Ready;
 					struct thread* running = running_thread;
 
@@ -222,18 +231,21 @@ while(done == 0){
                 				uthread_ctx_switch(running->context, temp->context); //what if there is nothing left in queue?
         				}*/
 					uthread_yield();
-				}
+				//}
+				//removde temp_zombie from enqueue.. Deltete it!
 				break;
 			}
 			curr_zombie = curr_zombie->next;
 		}
-	}//done
 		/*while(1){
 			if(queue_length(q) == 0){
 				break;
 			}
 			uthread_yield();
 		}*/
+	if(found == 0){
+		return -1;
+	}
 		return 0;
 }
 
