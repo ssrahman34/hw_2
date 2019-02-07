@@ -18,6 +18,7 @@
 int num_threads = 0;
 struct queue* q;
 struct queue* blocked_queue;
+struct queue* zombie_queue;
 
 struct thread* running_thread;
 
@@ -33,6 +34,7 @@ typedef struct thread{
 	uthread_t join_tid;
 	bool is_joined;
 	State state;
+	int retVal; //so we can use in jion
 	uthread_ctx_t *context;
 	void* arg;
 	uthread_func_t func;
@@ -111,54 +113,127 @@ int uthread_create(uthread_func_t func, void *arg)
 
 void uthread_exit(int retval)
 {
-//	running_thread->state = Zombie;
+	running_thread->state = Zombie;
+	running_thread->retVal = retval;
+	struct thread* running = running_thread;
+	uthread_t TID_to_unblock = running_thread->join_tid;
+	queue_enqueue(zombie_queue, running);
 
+	struct Node *curr_blocked = blocked_queue->front;
+
+	while(curr_blocked != NULL){
+		struct thread* temp_blocked = curr_blocked->key;
+		if(temp_blocked->TID == TID_to_unblock){
+			temp->state = Ready;
+			queue_enqueue(q, temp);
+			break;
+		}//we found which one to unblocn!
+		curr_blocked = curr_blocked->next;
+	}
+
+	struct Node *top = q->front;
+        struct thread* temp = (struct thread*)top->key;
+	if(queue_length(q) > 0){
+		struct thread *curr;//= malloc(sizeof(thread));
+        	queue_dequeue(q,(void **)&curr);
+	
+		uthread_ctx_switch(running->context, temp->context); //what if there is nothing left in queue?
+	}
+	//UPDATE your parent to be UNBLOCKEd
+	//add parent to the READY QUEUE
+	// pop the next ready item from the queue
+	// context switch to it..
 }
+
 
 int uthread_join(uthread_t tid, int *retval)
 {
 	//printf("In join");
-	//running_thread....
-/*	if(running_thread->TID == tid){
+
+	if(running_thread->TID == tid){
 		return -1;
-	}//if running thread is the parent...
+	}//if running thread is parent
 
 	if(tid == 0){return -1;}
 
 
-	struct Node *curr = q->front;
-	while(curr != NULL){
-		if(((struct thread*)curr->key)->TID == tid){
-			if(((struct thread*)curr->key)->is_joined == false){
-				((struct thread*)curr->key)->is_joined = true;
+	int done = 0;
+	int blocked = 0;
+while(done == 0){
+	struct Node *curr_zombie = zombie_queue->front;
+	struct Node *curr_q = q->front;
+	//struct Node *curr_blocked = blocked_queue->front;
+	
+	while(curr_q != NULL){
+		struct thread* temp = curr_q->key; //get the struct
+		if(temp->TID == tid){
+			if(temp->is_joined == false){
+				blocked = 1;
+				temp->is_joined = true;
 				running_thread->state = Blocked; //block the running thead.
 				queue_enqueue(blocked_queue, running_thread);
-				((struct thread*)curr->key)->join_tid = running_thread->TID;
+				temp->join_tid = running_thread->TID;//temp will use join_tid to figure which parent to unblock
 				uthread_yield();
 				printf("GOES IN IF\n");
 			}
+			else{
+				return -1; 
+			}
 		}
-		curr = curr->next;
+		curr_q = curr_q->next;
+	}
+
+	if(done == 0){
+		/*while(curr_blocked != NULL){
+			struct thread* temp_blocked = curr_blocked->key; //get the struct
+			if(temp_blocked->TID == tid){
+				found = 1;
+				if (temp->is_joined == false){
+				
+
+				}//if it hasnt been joined before
+				else{
+					return -1;
+				}
+			}
+			curr_blocked = curr_blocked->next;
+		}*/
+		while(curr_zombie != NULL){
+			struct thread* temp_zombie = curr_q->key;
+			if(temp_zombie->TID == tid){
+
+				if(retval != NULL)
+					*retval = running_thread->retVal;
+				//running_thread->retVal = retVal;//?
+				done = 1;
+				free(curr_zombie);
+				free(curr_q);
+				if(blocked == 1){
+					/*running_thread->state = Ready;
+					struct thread* running = running_thread;
+
+					queue_enqueue(q, running);
+					struct Node *top = q->front;
+        				struct thread* temp = (struct thread*)top->key;
+					//switch from your running thread tp next scheduled thread...
+        				if(queue_length(q) > 0){
+                				struct thread *curr;//= malloc(sizeof(thread));
+                				queue_dequeue(q,(void **)&curr);
+                				uthread_ctx_switch(running->context, temp->context); //what if there is nothing left in queue?
+        				}*/
+					uthread_yield();
+				}
+				break;
+			}
+			curr_zombie = curr_zombie->next;
 		}
-	*/
-/*
-		struct thread *curr;
-		printf("%d LEN", queue_length(q));
-                queue_dequeue(q,(void**)&curr);
-		uthread_ctx_switch(running_thread->context, curr->context);
-		running_thread->state = Ready;
-		queue_enqueue(q,running_thread);
-		curr->state = Running;
-		running_thread = curr;
-		*/
-		//	while(queue_length(q)>0){
-		while(1){
+	}//done
+		/*while(1){
 			if(queue_length(q) == 0){
 				break;
 			}
 			uthread_yield();
-		}
-
+		}*/
 		return 0;
 }
 
@@ -181,6 +256,7 @@ int main_thread(uthread_func_t func, void *arg)
 		return -1;
 	}
 	num_threads++; //increment thread number
+	zombie_queue = queue_create();
 	blocked_queue = queue_create();
 	q = queue_create();
 	//printf("Queue created\n");	
