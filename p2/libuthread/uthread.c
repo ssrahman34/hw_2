@@ -29,16 +29,15 @@ typedef enum{
 }State;
 
 typedef struct thread{
-	thread* parent; //= malloc(sizeof(thread));
 	uthread_t TID;
 	uthread_t join_tid;
-	bool is_joined = false;
+	bool is_joined;
 	State state;
-	uthread_ctx_t* context;
+	uthread_ctx_t *context;
 	void* arg;
 	uthread_func_t func;
 	int* stack;// = uthread_ctx_alloc_stack();
-} thread;
+}thread;
 
 int main_thread(uthread_func_t func, void *arg);
 
@@ -46,16 +45,17 @@ int main_thread(uthread_func_t func, void *arg);
 void uthread_yield(void)
 {
 	if(queue_length(q) > 0){
-		struct Node *curr;
-		queue_dequeue(q,&curr);
+		printf("in yeld");
+		struct thread *curr;
+		queue_dequeue(q,(void**)&curr);
 		struct thread* prev_struct =  running_thread;
-		struct thread* curr_struct =  (struct thread*)curr->key; //make this our running thread.
+		struct thread* curr_struct =  curr; //make this our running thread.
 
 		prev_struct->state = Ready;
-		queue_enqueue(q,running_thread);//add running thread to q!
-		uthread_ctx_switch(prev_struct->context, curr_struct->context);
+		queue_enqueue(q,(void*)running_thread);//add running thread to q!
 		curr_struct->state = Running;
 		running_thread = curr_struct; //now this is running thread.
+		uthread_ctx_switch(prev_struct->context, curr_struct->context);
 	}//if we have queue
 	return;
 }
@@ -79,7 +79,8 @@ int uthread_create(uthread_func_t func, void *arg)
 		thread->TID = num_threads;
 		thread->func = func;
 		thread->arg = arg;
-		thread->parent = running_thread;
+		thread->is_joined = false;
+		//thread->parent = running_thread;
 		thread->state = Ready; //assign to read?
 		thread->stack = top_of_stack; //assign stack
 		thread->context = malloc(sizeof(uthread_ctx_t));
@@ -95,13 +96,14 @@ int uthread_create(uthread_func_t func, void *arg)
 
 void uthread_exit(int retval)
 {
-	/* TODO Phase 2 */
+	running_thread->state = Zombie;
+
 }
 
 int uthread_join(uthread_t tid, int *retval)
 {
 	//running_thread....
-	if(running_thread->TID == tid){
+/*	if(running_thread->TID == tid){
 		return -1;
 	}//if running thread is the parent...
 
@@ -115,12 +117,20 @@ int uthread_join(uthread_t tid, int *retval)
 				((struct thread*)curr->key)->is_joined = true;
 				running_thread->state = Blocked; //block the running thead.
 				queue_enqueue(blocked_queue, running_thread);
-				((struct thread*)curr->key)->join_tid = runnin_thread->TID
-				uthread_yeild();
+				((struct thread*)curr->key)->join_tid = running_thread->TID;
+				uthread_yield();
+				printf("GOES IN IF\n");
 			}
 		}
 		curr = curr->next;
 		}
+	*/
+struct Node *curr = q->front;
+	while(1){
+		if(curr == NULL){break;}
+		uthread_yield();
+		curr = curr->next;
+	}	
 	return 0;
 }
 
@@ -131,7 +141,8 @@ int main_thread(uthread_func_t func, void *arg)
 	thread->TID = num_threads;
         thread->state = Running; //assign to read?
 	thread->arg = arg;
-	thread->parent = NULL;
+	thread->is_joined = false;
+	//thread->parent = NULL;
 	thread->func = func;
 	thread->context = malloc(sizeof(uthread_ctx_t));
 	void *top_of_stack = uthread_ctx_alloc_stack();

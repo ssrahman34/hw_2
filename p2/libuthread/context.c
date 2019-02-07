@@ -50,14 +50,12 @@ static void uthread_ctx_bootstrap(uthread_func_t func, void *arg)
 int uthread_ctx_init(uthread_ctx_t *uctx, void *top_of_stack,
 		     uthread_func_t func, void *arg)
 {
-	printf("IN INIT\n");
 	/*
 	 * Initialize the passed context @uctx to the currently active context
 	 */
 	if (getcontext(uctx))
 		return -1;
 
-printf("DID WE MAKE IT PAST context\n");
 	/*
 	 * Change context @uctx's stack to the specified stack
 	 */
