@@ -39,32 +39,40 @@ typedef struct thread{
 	int* stack;// = uthread_ctx_alloc_stack();
 }thread;
 
+void test();
 int main_thread(uthread_func_t func, void *arg);
 
 /* Look for the next available thread */
 void uthread_yield(void)
 {
-	printf("%d LEN in yield ", queue_length(q));
-	
 	if(queue_length(q) > 0){
-		printf("is it >0 ?\n");
-		struct thread *curr;
+		struct thread *temp = running_thread;
+		struct thread *curr= NULL;
+                
 		queue_dequeue(q,(void**)&curr);
+		temp->state = Ready;
+                queue_enqueue(q, temp);
+                curr->state = Running;
+		running_thread = curr;
+		
+		uthread_ctx_switch(running_thread->context, curr->context);
+	}
+
+	//		struct thread *curr;
+//		queue_dequeue(q,(void**)&curr);
 //		//struct thread* prev_struct =  running_thread;
 		//struct thread* curr_struct =  curr; //make this our running thread.
-
-		uthread_ctx_switch(running_thread->context, curr->context);
+//		uthread_ctx_switch(running_thread->context, curr->context);
 		//running_thread->state = Ready;
                 //queue_enqueue(q,(void*)running_thread);//add running thread to q!
                 //((struct thread*)curr)->state = Running;
                 //running_thread = (struct thread*)curr; //now this is running thread.
-	}//if we have queue
-	return;
+	//return;
 }
 
 uthread_t uthread_self(void)
 {
-	
+	return running_thread->TID;	
 }
 
 int uthread_create(uthread_func_t func, void *arg)
@@ -98,7 +106,7 @@ int uthread_create(uthread_func_t func, void *arg)
 
 void uthread_exit(int retval)
 {
-	running_thread->state = Zombie;
+//	running_thread->state = Zombie;
 
 }
 
@@ -128,19 +136,39 @@ int uthread_join(uthread_t tid, int *retval)
 		curr = curr->next;
 		}
 	*/
-
+/*
 		struct thread *curr;
 		printf("%d LEN", queue_length(q));
                 queue_dequeue(q,(void**)&curr);
 		uthread_ctx_switch(running_thread->context, curr->context);
-//	while(queue_length(q)>0){
-//		uthread_yield();
-//		printf("after");
+		running_thread->state = Ready;
+		queue_enqueue(q,running_thread);
+		curr->state = Running;
+		running_thread = curr;
+		*/
+		//	while(queue_length(q)>0){
+		while(1){
+			if(queue_length(q) == 0){
+				break;
+			}
+		uthread_yield();
+		}
 
-//	}
 		return 0;
 }
 
+void test(){
+struct thread *curr;
+                printf("%d LEN", queue_length(q));
+                queue_dequeue(q,(void**)&curr);
+                uthread_ctx_switch(running_thread->context, curr->context);
+                running_thread->state = Ready;
+                queue_enqueue(q,running_thread);
+                curr->state = Running;
+                running_thread = curr;
+
+return;
+}
 int main_thread(uthread_func_t func, void *arg)
 {
 	printf("reached main_thread\n");
