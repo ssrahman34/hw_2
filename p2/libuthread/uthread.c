@@ -17,6 +17,9 @@
 
 int num_threads = 0;
 struct queue* q;
+struct queue* blocked_queue;
+
+struct thread* running_thread;
 
 typedef enum{
         Blocked ,
@@ -26,31 +29,33 @@ typedef enum{
 }State;
 
 typedef struct thread{
+	//thread* parent = malloc(sizeof(thread));
 	uthread_t TID;
 	State state;
-	uthread_ctx_t context;
+	uthread_ctx_t* context;
+	void* arg;
+	uthread_func_t func;
 	int* stack;// = uthread_ctx_alloc_stack();
-};
+} thread;
 
 int main_thread(uthread_func_t func, void *arg);
-void uthread_yield(void)
-{//look for next available thread!
-	struct Node *curr = q->front;
-	struct Node *next;
-	while(curr->next != NULL){
-		struct thread* prev_struct =  (struct thread*)curr->key;	
-		struct thread* curr_struct =  (struct thread*)curr->next->key;
-		if(curr_struct->state == Ready){
-			//prev_struct is what we switch from
-			//curr_struct will be the next threat we switch to 
-			uthread_ctx_switch((uthread_ctx_t*)prev_struct, (uthread_ctx_t*)curr_struct);
-			curr_struct->state = Running;
-			prev_struct->state = Blocked;
-		}
-		curr=curr->next;
-	}//while loops
 
-	/* TODO Phase 2 */
+/* Look for the next available thread */
+void uthread_yield(void)
+{
+	if(queue_length(q) > 0){
+		struct Node *curr;
+		queue_dequeue(q,&curr);
+		struct thread* prev_struct =  running_thread;
+		struct thread* curr_struct =  (struct thread*)curr->key; //make this our running thread.
+
+		prev_struct->state = Blocked;
+		queue_enqueue(blocked_queue,running_thread);//add it to bloecked		
+		uthread_ctx_switch(prev_struct->context, curr_struct->context);
+		curr_struct->state = Running;
+		running_thread = curr_struct; //now this is running thread.
+	}//if we have queue
+	return;
 }
 
 uthread_t uthread_self(void)
@@ -65,19 +70,21 @@ int uthread_create(uthread_func_t func, void *arg)
 		main_thread(func, arg);
 	}
 	else{
-		struct thread *thread;
+		struct thread *thread = malloc(sizeof(struct thread));
 		void *top_of_stack = uthread_ctx_alloc_stack();
-		int retVal = uthread_ctx_init(&thread->context, top_of_stack, func, arg);
 	
-		if (retVal== -1){
-			return -1;
-		}
-		num_threads++; //increment thread number
 		
 		thread->TID = num_threads;
-		thread->state = 2; //assign to read?
+		thread->func = func;
+		thread->arg = arg;
+		thread->state = Ready; //assign to read?
 		thread->stack = top_of_stack; //assign stack
-		
+		thread->context = malloc(sizeof(uthread_ctx_t));
+		int retVal = uthread_ctx_init(thread->context, top_of_stack, func, arg);
+		if (retVal != 0){
+			return -1;
+                }	
+		num_threads++; //increment thread number
 		queue_enqueue(q, thread); //add the struct to the queue
 		return thread->TID;
 	}
@@ -90,31 +97,42 @@ void uthread_exit(int retval)
 
 int uthread_join(uthread_t tid, int *retval)
 {
-	/* TODO Phase 2 */
-	/* TODO Phase 3 */
+	while(1){
+		struct Node *curr = q->front;
+		while(curr != NULL){
+			if(((struct thread*)curr->key)->state == Ready){
+				uthread_yield();
+			}
+			curr = curr->next;
+		}
+		break;
+	}
+	return 0;
 }
 
 int main_thread(uthread_func_t func, void *arg)
 {
 	printf("reached main_thread\n");
-	struct thread *thread;
+	struct thread *thread = malloc(sizeof(struct thread));
+	thread->TID = num_threads;
+        thread->state = Running; //assign to read?
+	thread->arg = arg;
+	//thread->parent = NULL;
+	thread->func = func;
+	thread->context = malloc(sizeof(uthread_ctx_t));
 	void *top_of_stack = uthread_ctx_alloc_stack();
-//printf("%ls\n",top_of_stack);
-	int retVal = uthread_ctx_init(&thread->context, top_of_stack, func, arg);
-	printf(" %d retVAL", retVal);
+        thread->stack = top_of_stack; //assign stack
+	int retVal = uthread_ctx_init(thread->context, top_of_stack, func, arg);
 
 	if (retVal == -1){
 		return -1;
 	}
-	printf("Did it return -1?");
 	num_threads++; //increment thread number
-
-	thread->TID = num_threads;
-	thread->state = 1; //assign to read?
-	thread->stack = top_of_stack; //assign stack
+	blocked_queue = queue_create();
 	q = queue_create();
 printf("Queue created\n");	
 	queue_enqueue(q, thread); //add the struct to the queue
+	printf("%d",q->front->key);
 	return 0; //return TID
 }
 
