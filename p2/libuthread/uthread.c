@@ -29,8 +29,10 @@ typedef enum{
 }State;
 
 typedef struct thread{
-	//thread* parent = malloc(sizeof(thread));
+	thread* parent; //= malloc(sizeof(thread));
 	uthread_t TID;
+	uthread_t join_tid;
+	bool is_joined = false;
 	State state;
 	uthread_ctx_t* context;
 	void* arg;
@@ -49,8 +51,8 @@ void uthread_yield(void)
 		struct thread* prev_struct =  running_thread;
 		struct thread* curr_struct =  (struct thread*)curr->key; //make this our running thread.
 
-		prev_struct->state = Blocked;
-		queue_enqueue(blocked_queue,running_thread);//add it to bloecked		
+		prev_struct->state = Ready;
+		queue_enqueue(q,running_thread);//add running thread to q!
 		uthread_ctx_switch(prev_struct->context, curr_struct->context);
 		curr_struct->state = Running;
 		running_thread = curr_struct; //now this is running thread.
@@ -69,7 +71,7 @@ int uthread_create(uthread_func_t func, void *arg)
 	if(num_threads == 0){
 		main_thread(func, arg);
 	}
-	else{
+	
 		struct thread *thread = malloc(sizeof(struct thread));
 		void *top_of_stack = uthread_ctx_alloc_stack();
 	
@@ -77,6 +79,7 @@ int uthread_create(uthread_func_t func, void *arg)
 		thread->TID = num_threads;
 		thread->func = func;
 		thread->arg = arg;
+		thread->parent = running_thread;
 		thread->state = Ready; //assign to read?
 		thread->stack = top_of_stack; //assign stack
 		thread->context = malloc(sizeof(uthread_ctx_t));
@@ -87,7 +90,7 @@ int uthread_create(uthread_func_t func, void *arg)
 		num_threads++; //increment thread number
 		queue_enqueue(q, thread); //add the struct to the queue
 		return thread->TID;
-	}
+	
 }
 
 void uthread_exit(int retval)
@@ -97,16 +100,27 @@ void uthread_exit(int retval)
 
 int uthread_join(uthread_t tid, int *retval)
 {
-	while(1){
-		struct Node *curr = q->front;
-		while(curr != NULL){
-			if(((struct thread*)curr->key)->state == Ready){
-				uthread_yield();
+	//running_thread....
+	if(running_thread->TID == tid){
+		return -1;
+	}//if running thread is the parent...
+
+	if(tid == 0){return -1;}
+
+
+	struct Node *curr = q->front;
+	while(curr != NULL){
+		if(((struct thread*)curr->key)->TID == tid){
+			if(((struct thread*)curr->key)->is_joined == false){
+				((struct thread*)curr->key)->is_joined = true;
+				running_thread->state = Blocked; //block the running thead.
+				queue_enqueue(blocked_queue, running_thread);
+				((struct thread*)curr->key)->join_tid = runnin_thread->TID
+				uthread_yeild();
 			}
-			curr = curr->next;
 		}
-		break;
-	}
+		curr = curr->next;
+		}
 	return 0;
 }
 
@@ -117,7 +131,7 @@ int main_thread(uthread_func_t func, void *arg)
 	thread->TID = num_threads;
         thread->state = Running; //assign to read?
 	thread->arg = arg;
-	//thread->parent = NULL;
+	thread->parent = NULL;
 	thread->func = func;
 	thread->context = malloc(sizeof(uthread_ctx_t));
 	void *top_of_stack = uthread_ctx_alloc_stack();
@@ -130,9 +144,9 @@ int main_thread(uthread_func_t func, void *arg)
 	num_threads++; //increment thread number
 	blocked_queue = queue_create();
 	q = queue_create();
-printf("Queue created\n");	
-	queue_enqueue(q, thread); //add the struct to the queue
-	printf("%d",q->front->key);
+	printf("Queue created\n");	
+	running_thread = thread;
+	//queue_enqueue(q, thread); //add the struct to the queue
 	return 0; //return TID
 }
 
