@@ -40,14 +40,20 @@ int queue_destroy(queue_t queue)
 
 int queue_enqueue(queue_t queue, void *data)
 {
-	struct Node *temp = (struct Node*) malloc(sizeof(struct Node));
-	temp->key = data;//this might be a problem //might need to make key a *
+	if(data == NULL || queue== NULL){
+		return -1;
+	}
+	struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+	new_node->key = data;
+	new_node->next = NULL;
+	//struct Node *temp = (struct Node*) malloc(sizeof(struct Node));
+	//temp = data;//this might be a problem //might need to make key a *
 	if (queue->rear == NULL){
-		queue->front = queue->rear = temp;		
+		queue->front = queue->rear = new_node;		
 		return 0;
 	} 
-	queue->rear->next = temp;
-	queue->rear = temp;
+	queue->rear->next = new_node;
+	queue->rear= new_node;
     return 0;
 
 }
@@ -58,10 +64,12 @@ int queue_dequeue(queue_t queue, void **data)
 		return -1;
 	}
 	
+	*data = &(queue->front->key);
 	queue->front = queue->front->next;
 	if(queue->front == NULL){
 		queue->rear=NULL;
 	}
+	//free (queue->front);
 	return 0;
 }
 
