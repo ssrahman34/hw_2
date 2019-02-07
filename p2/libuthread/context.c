@@ -22,7 +22,6 @@ void uthread_ctx_switch(uthread_ctx_t *prev, uthread_ctx_t *next)
 
 void *uthread_ctx_alloc_stack(void)
 {
-	printf("In alloc, (please delete later\n");
 	return malloc(UTHREAD_STACK_SIZE);
 }
 

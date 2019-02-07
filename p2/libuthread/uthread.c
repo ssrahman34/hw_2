@@ -44,23 +44,23 @@ int main_thread(uthread_func_t func, void *arg);
 /* Look for the next available thread */
 void uthread_yield(void)
 {
-	printf("in yield");
-	printf("running thread TID = %d\n", running_thread->TID);
+	//printf("in yield");
+	//printf("running thread TID = %d\n", running_thread->TID);
 	if(queue_length(q) > 0){
 		struct thread *running = running_thread;
 		//printf("%s", temp->TID);
 		struct Node *top = q->front;
 		struct thread* temp = (struct thread*)top->key;
-		if(temp->TID == 0){
+	/*	if(temp->TID == 0){
 			printf("NULL");
 		}else{
 
 			printf("is it 1? = %d\n", temp->TID);
-		}
+		}*/
 		struct thread *curr;//= malloc(sizeof(thread));
                 
 		queue_dequeue(q,(void **)&curr);
-		printf("curr  DEQUED tid : %d", curr->TID);
+		printf("curr  DEQUEUED tid : %d\n", curr->TID);
 		temp->state = Running;
                 running->state = Ready;
 		
@@ -79,7 +79,7 @@ uthread_t uthread_self(void)
 
 int uthread_create(uthread_func_t func, void *arg)
 {
-	printf("Reached uthread_create\n");
+	//printf("Reached uthread_create\n");
 	if(num_threads == 0){
 		main_thread(func, arg);
 	}
@@ -117,7 +117,7 @@ void uthread_exit(int retval)
 
 int uthread_join(uthread_t tid, int *retval)
 {
-	printf("In join");
+	//printf("In join");
 	//running_thread....
 /*	if(running_thread->TID == tid){
 		return -1;
@@ -164,7 +164,7 @@ int uthread_join(uthread_t tid, int *retval)
 
 int main_thread(uthread_func_t func, void *arg)
 {
-	printf("reached main_thread\n");
+	//printf("reached main_thread\n");
 	struct thread *thread = malloc(sizeof(struct thread));
 	thread->TID = num_threads;
         thread->state = Running; //assign to read?
@@ -183,9 +183,9 @@ int main_thread(uthread_func_t func, void *arg)
 	num_threads++; //increment thread number
 	blocked_queue = queue_create();
 	q = queue_create();
-	printf("Queue created\n");	
+	//printf("Queue created\n");	
 	running_thread = thread;
-	printf("%d", running_thread->TID);
+	//printf("%d", running_thread->TID);
 	//queue_enqueue(q, thread); //add the struct to the queue
 	return 0; //return TID
 }
