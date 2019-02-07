@@ -44,18 +44,20 @@ int main_thread(uthread_func_t func, void *arg);
 /* Look for the next available thread */
 void uthread_yield(void)
 {
+	printf("%d LEN in yield ", queue_length(q));
+	
 	if(queue_length(q) > 0){
-		printf("in yeld");
+		printf("is it >0 ?\n");
 		struct thread *curr;
 		queue_dequeue(q,(void**)&curr);
-		struct thread* prev_struct =  running_thread;
-		struct thread* curr_struct =  curr; //make this our running thread.
+//		//struct thread* prev_struct =  running_thread;
+		//struct thread* curr_struct =  curr; //make this our running thread.
 
-		prev_struct->state = Ready;
-		queue_enqueue(q,(void*)running_thread);//add running thread to q!
-		curr_struct->state = Running;
-		running_thread = curr_struct; //now this is running thread.
-		uthread_ctx_switch(prev_struct->context, curr_struct->context);
+		uthread_ctx_switch(running_thread->context, curr->context);
+		//running_thread->state = Ready;
+                //queue_enqueue(q,(void*)running_thread);//add running thread to q!
+                //((struct thread*)curr)->state = Running;
+                //running_thread = (struct thread*)curr; //now this is running thread.
 	}//if we have queue
 	return;
 }
@@ -102,6 +104,7 @@ void uthread_exit(int retval)
 
 int uthread_join(uthread_t tid, int *retval)
 {
+	printf("In join");
 	//running_thread....
 /*	if(running_thread->TID == tid){
 		return -1;
@@ -125,13 +128,17 @@ int uthread_join(uthread_t tid, int *retval)
 		curr = curr->next;
 		}
 	*/
-struct Node *curr = q->front;
-	while(1){
-		if(curr == NULL){break;}
-		uthread_yield();
-		curr = curr->next;
-	}	
-	return 0;
+
+		struct thread *curr;
+		printf("%d LEN", queue_length(q));
+                queue_dequeue(q,(void**)&curr);
+		uthread_ctx_switch(running_thread->context, curr->context);
+//	while(queue_length(q)>0){
+//		uthread_yield();
+//		printf("after");
+
+//	}
+		return 0;
 }
 
 int main_thread(uthread_func_t func, void *arg)
