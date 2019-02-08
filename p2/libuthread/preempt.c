@@ -14,30 +14,41 @@
  * 100Hz is 100 times per second
  */
 #define HZ 100
-//sigset_t block;
-
+sigset_t *set;
+struct itimerval value;//1000ms
+/*int main(){
+preempt_start();
+return 0;
+}*/
 void preempt_disable(void)
 {
-	//sigfillset(SIGVTALRM); //signal blocking function
+        value.it_value.tv_usec = 0; //disable alarm
+        value.it_value.tv_sec = 0; //disable alarm
+         //sigdelset(set, SIGVTALRM);
+        //sigfillset(SIGVTALRM); //signal blocking function
 }
-
 void preempt_enable(void)
 {
-	//sigemptyset(SIGVTALRM);
+        value.it_value.tv_usec = 10000; //disable alarm
+        value.it_value.tv_sec = 10000; //disable alarm
+//      sigaddset(set, SIGVTALRM);
+        //sigemptyset(SIGVTALRM);
 }
-
+void handler(void){
+        printf("in handler!");
+}
 void preempt_start(void)
 {
-	struct sigaction action;
-	struct itimerval value;//1000ms
-	value.it_value.tv_usec = 10000;
-	//SIGVTalarm
-	//sigemptyset(&action.sa_mask);
-	action.sa_flags = SA_NODEFER;//SA_NOMASK
-	action.sa_handler = &uthread_yield; //call yield fn
-	//setitimer (value, &new, &old); //do we check <0?
-	sigaction(SIGVTALRM,&action, NULL);
-	//signal (SIGALRM, catch_alarm)
+        struct sigaction action;
+        value.it_value.tv_usec = 10000;
+        value.it_value.tv_sec = 0;
+        value.it_interval.tv_sec = 0;
+        value.it_interval.tv_usec = 10000;
+        //action.sa_flags = SA_NODEFER;//SA_NOMASK
+        action.sa_handler = handler;//uthread_yield; //call yield fn
+        //setitimer (value, &new, &old); //do we check <0?
+        sigaction(SIGVTALRM,&action, NULL);
+        //signal (SIGALRM, catch_alarm)
 
 }
 //https://stackoverflow.com/questions/5316749/having-trouble-using-sigaction-with-a-timer-signal
