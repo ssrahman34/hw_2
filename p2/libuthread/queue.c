@@ -11,6 +11,7 @@ struct Node{
 
 struct queue {
 	struct Node *front, *rear;
+	int length;
 };
 
 queue_t queue_create(void)
@@ -18,7 +19,8 @@ queue_t queue_create(void)
 	
 	struct queue* queue = (struct queue*) malloc(sizeof(struct queue));
 	queue->front = NULL;
-	queue->rear = NULL;  
+	queue->rear = NULL; 
+        queue->length = 0;	
 	return queue;
 }
 
@@ -48,6 +50,7 @@ int queue_enqueue(queue_t queue, void *data)
 	new_node->next = NULL;
 	//struct Node *temp = (struct Node*) malloc(sizeof(struct Node));
 	//temp = data;//this might be a problem //might need to make key a *
+	queue->length++;
 	if (queue->rear == NULL){
 		queue->front = queue->rear = new_node;		
 		return 0;
@@ -64,11 +67,12 @@ int queue_dequeue(queue_t queue, void **data)
 		return -1;
 	}
 	
-	*data = &(queue->front->key);
+	*data = queue->front->key;
 	queue->front = queue->front->next;
 	if(queue->front == NULL){
 		queue->rear=NULL;
 	}
+	queue->length--;
 	//free (queue->front);
 	return 0;
 }
@@ -84,6 +88,7 @@ int queue_delete(queue_t queue, void *data)
 			struct Node *temp = curr->next;
 			curr->next = curr->next->next;
 			free(temp); //delete
+			queue->length--;
 			return 0;
 		}
 		curr = curr->next;
@@ -124,21 +129,6 @@ int queue_length(queue_t queue)
 	if(queue->front == NULL){
 		return 0; //we have an empty queue
 	}
-	int length = 1;
-	struct Node* curr = queue->front;
-	while(curr != queue->rear){
-		length++;
-		curr = curr->next;
-	}
-	//length = count(queue->front);
-	return length;
+	return queue->length;
 }
-
-/*int count(struct Node* head){
- if (head == NULL) 
-        return 0; 
-  
-    // count is 1 + count of remaining list 
-    return 1 + count(head->next); 
-}*/
 

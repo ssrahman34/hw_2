@@ -48,35 +48,15 @@ void uthread_yield(void)
 {
 	if(queue_length(q) > 0){
 		struct thread *running = running_thread;
-		//printf("%s", temp->TID);
-		struct Node *top = q->front;
-		struct thread* temp = (struct thread*)top->key;
-//		printf("%ld\n", temp);
-		/*if(temp->TID == 0){
-			printf("NULL");
-		}else{
-
-			printf("front of queue TID is = %d\n", temp->TID);
-		}*/
 		struct thread *curr = NULL;//= malloc(sizeof(thread));
-                //prempt disable?
-
 		queue_dequeue(q,(void **)&curr);
-//		printf("%ld\n", curr);
-//		printf("curr  DEQUEUED tid : %d\n", curr->TID);
-		if(temp->state == Ready){
-
-                	if(running->state == Running){
-
+                if(running->state == Running){
 			running->state = Ready;
                 	queue_enqueue(q, (void*)running);
-			}
-		temp->state = Running;
-		running_thread = temp;
-		
-		uthread_ctx_switch(running->context, temp->context);
 		}
-		//uthread_ctx_switch(running->context, temp->context);
+		curr->state = Running;
+		running_thread = curr;
+		uthread_ctx_switch(running->context, curr->context);
 	}
 	return;
 }
