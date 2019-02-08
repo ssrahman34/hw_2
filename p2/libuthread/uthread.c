@@ -46,8 +46,6 @@ int main_thread(uthread_func_t func, void *arg);
 /* Look for the next available thread */
 void uthread_yield(void)
 {
-//	printf("in yield");
-	//printf("running thread TID = %d\n", running_thread->TID);
 	if(queue_length(q) > 0){
 		struct thread *running = running_thread;
 		//printf("%s", temp->TID);
@@ -78,6 +76,7 @@ void uthread_yield(void)
 		
 		uthread_ctx_switch(running->context, temp->context);
 		}
+		//uthread_ctx_switch(running->context, temp->context);
 	}
 	return;
 }
@@ -96,7 +95,6 @@ int uthread_create(uthread_func_t func, void *arg)
 		struct thread *thr = malloc(sizeof(struct thread));
 		void *top_of_stack = uthread_ctx_alloc_stack();
 	
-//	printf("Reached uthread_create\n");
 		
 		thr->TID = num_threads;
 		thr->func = func;
@@ -121,7 +119,6 @@ int uthread_create(uthread_func_t func, void *arg)
 
 void uthread_exit(int retval)
 {
-//	printf("in exit");
 	running_thread->state = Zombie;
 	running_thread->retVal = retval;
 	struct thread* running = running_thread;
@@ -140,8 +137,8 @@ void uthread_exit(int retval)
 		}//we found which one to unblocn!
 		curr_blocked = curr_blocked->next;
 	}
-
-	struct Node *top = q->front;
+	uthread_yield();
+/*	struct Node *top = q->front;
         struct thread* temp = (struct thread*)top->key;
 	if(queue_length(q) > 0){
 		struct thread *curr;//= malloc(sizeof(thread));
@@ -149,6 +146,10 @@ void uthread_exit(int retval)
 		printf("exit and switch:");
 		uthread_ctx_switch(running->context, temp->context); //what if there is nothing left in queue?
 	}
+	else{
+		printf("empty queue");
+		printf(" TID TO UNBLOCK: %d", TID_to_unblock);
+	}*/
 	//UPDATE your parent to be UNBLOCKEd
 	//add parent to the READY QUEUE
 	// pop the next ready item from the queue
@@ -158,7 +159,6 @@ void uthread_exit(int retval)
 
 int uthread_join(uthread_t tid, int *retval)
 {
-	//printf("In join");
 
 	if(running_thread->TID == tid){
 		return -1;
@@ -224,6 +224,7 @@ int uthread_join(uthread_t tid, int *retval)
 					//free(curr_q);
 					free(temp_zombie->context);
 					uthread_ctx_destroy_stack(temp_zombie->stack);
+					break;
 				}
 				else{
 					return -1;
@@ -262,7 +263,6 @@ int uthread_join(uthread_t tid, int *retval)
 
 int main_thread(uthread_func_t func, void *arg)
 {
-//	printf("reached main_thread\n");
 	struct thread *thread = malloc(sizeof(struct thread));
 	thread->TID = num_threads;
         thread->state = Running; //assign to read?
