@@ -46,7 +46,7 @@ int main_thread(uthread_func_t func, void *arg);
 /* Look for the next available thread */
 void uthread_yield(void)
 {
-	printf("in yield");
+//	printf("in yield");
 	//printf("running thread TID = %d\n", running_thread->TID);
 	if(queue_length(q) > 0){
 		struct thread *running = running_thread;
@@ -60,18 +60,24 @@ void uthread_yield(void)
 
 			printf("front of queue TID is = %d\n", temp->TID);
 		}*/
-		struct thread *curr;//= malloc(sizeof(thread));
-                
+		struct thread *curr = NULL;//= malloc(sizeof(thread));
+                //prempt disable?
+
 		queue_dequeue(q,(void **)&curr);
 //		printf("%ld\n", curr);
 //		printf("curr  DEQUEUED tid : %d\n", curr->TID);
+		if(temp->state == Ready){
+
+                	if(running->state == Running){
+
+			running->state = Ready;
+                	queue_enqueue(q, (void*)running);
+			}
 		temp->state = Running;
-                running->state = Ready;
-		
-                queue_enqueue(q, running);
 		running_thread = temp;
 		
 		uthread_ctx_switch(running->context, temp->context);
+		}
 	}
 	return;
 }
@@ -83,7 +89,6 @@ uthread_t uthread_self(void)
 
 int uthread_create(uthread_func_t func, void *arg)
 {
-	//printf("Reached uthread_create\n");
 	if(num_threads == 0){
 		main_thread(func, arg);
 	}
@@ -91,6 +96,7 @@ int uthread_create(uthread_func_t func, void *arg)
 		struct thread *thr = malloc(sizeof(struct thread));
 		void *top_of_stack = uthread_ctx_alloc_stack();
 	
+//	printf("Reached uthread_create\n");
 		
 		thr->TID = num_threads;
 		thr->func = func;
@@ -115,6 +121,7 @@ int uthread_create(uthread_func_t func, void *arg)
 
 void uthread_exit(int retval)
 {
+//	printf("in exit");
 	running_thread->state = Zombie;
 	running_thread->retVal = retval;
 	struct thread* running = running_thread;
@@ -255,7 +262,7 @@ int uthread_join(uthread_t tid, int *retval)
 
 int main_thread(uthread_func_t func, void *arg)
 {
-	//printf("reached main_thread\n");
+//	printf("reached main_thread\n");
 	struct thread *thread = malloc(sizeof(struct thread));
 	thread->TID = num_threads;
         thread->state = Running; //assign to read?
