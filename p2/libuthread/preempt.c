@@ -34,9 +34,6 @@ void preempt_enable(void)
 //      sigaddset(set, SIGVTALRM);
         //sigemptyset(SIGVTALRM);
 }
-void handle(int signum){
-        printf("in handler!");
-}
 void preempt_start(void)
 {
         struct sigaction action;
@@ -45,7 +42,7 @@ void preempt_start(void)
         value.it_value.tv_sec = 0;
         value.it_interval.tv_sec = 0;
         value.it_interval.tv_usec = 10000;
-        action.sa_handler = handle;//uthread_yield; //call yield fn
+        action.sa_handler = uthread_yield;//uthread_yield; //call yield fn
         sigaction(SIGVTALRM,&action, NULL);
 
 }
