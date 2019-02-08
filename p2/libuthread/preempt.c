@@ -34,18 +34,19 @@ void preempt_enable(void)
 //      sigaddset(set, SIGVTALRM);
         //sigemptyset(SIGVTALRM);
 }
+void handle(int signum){
+        printf("in handler!");
+}
 void preempt_start(void)
 {
-        struct sigaction action;
-        value.it_value.tv_usec = 10000;
-        value.it_value.tv_sec = 0;
-        value.it_interval.tv_sec = 0;
-        value.it_interval.tv_usec = 10000;
-        //action.sa_flags = SA_NODEFER;//SA_NOMASK
-        //action.sa_handler = handler;//uthread_yield; //call yield fn
-        //setitimer (value, &new, &old); //do we check <0?
-        sigaction(SIGVTALRM,&action, NULL);
-        //signal (SIGALRM, catch_alarm)
+        struct sigaction action;
+        sigemptyset (&action.sa_mask);
+        value.it_value.tv_usec = 10000;
+        value.it_value.tv_sec = 0;
+        value.it_interval.tv_sec = 0;
+        value.it_interval.tv_usec = 10000;
+        action.sa_handler = handle;//uthread_yield; //call yield fn
+        sigaction(SIGVTALRM,&action, NULL);
 
 }
 //https://stackoverflow.com/questions/5316749/having-trouble-using-sigaction-with-a-timer-signal
