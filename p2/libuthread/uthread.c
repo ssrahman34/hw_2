@@ -229,32 +229,11 @@ int uthread_join(uthread_t tid, int *retval)
 				else{
 					return -1;
 				}
-				//if(blocked == 1){
-					/*running_thread->state = Ready;
-					struct thread* running = running_thread;
-
-					queue_enqueue(q, running);
-					struct Node *top = q->front;
-        				struct thread* temp = (struct thread*)top->key;
-					//switch from your running thread tp next scheduled thread...
-        				if(queue_length(q) > 0){
-                				struct thread *curr;//= malloc(sizeof(thread));
-                				queue_dequeue(q,(void **)&curr);
-                				uthread_ctx_switch(running->context, temp->context); //what if there is nothing left in queue?
-        				}*/
 					uthread_yield();
-				//}
-				//removde temp_zombie from enqueue.. Deltete it!
 				break;
 			}
 			curr_zombie = curr_zombie->next;
 		}
-		/*while(1){
-			if(queue_length(q) == 0){
-				break;
-			}
-			uthread_yield();
-		}*/
 	if(found == 0){
 		return -1;
 	}
