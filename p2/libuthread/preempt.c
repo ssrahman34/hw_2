@@ -45,7 +45,7 @@ void preempt_start(void)
         value.it_interval.tv_sec = 0;
         value.it_interval.tv_usec = 10000;
         //action.sa_flags = SA_NODEFER;//SA_NOMASK
-        action.sa_handler = handler;//uthread_yield; //call yield fn
+        //action.sa_handler = handler;//uthread_yield; //call yield fn
         //setitimer (value, &new, &old); //do we check <0?
         sigaction(SIGVTALRM,&action, NULL);
         //signal (SIGALRM, catch_alarm)

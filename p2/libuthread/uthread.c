@@ -12,7 +12,6 @@
 #include "preempt.c"
 #include "queue.h"
 #include "uthread.h"
-#include "queue.h"
 #include "queue.c"
 
 int num_threads = 0;
@@ -126,7 +125,7 @@ int uthread_join(uthread_t tid, int * retval) {
     }
 
     int found = 0;
-    int blocked = 0;
+    //int blocked = 0;
     struct Node * curr_zombie = zombie_queue -> front;
     struct Node * curr_q = q -> front;
     struct Node * curr_blocked = blocked_queue -> front;
@@ -136,7 +135,7 @@ int uthread_join(uthread_t tid, int * retval) {
         if (temp -> TID == tid) {
             found = 1;
             if (temp -> is_joined == false) {
-                blocked = 1;
+                //blocked = 1;
                 temp -> is_joined = true;
                 running_thread -> state = Blocked; //block the running thead.
                 queue_enqueue(blocked_queue, running_thread);
@@ -155,7 +154,7 @@ int uthread_join(uthread_t tid, int * retval) {
         if (temp_blocked -> TID == tid) {
             found = 1;
             if (temp_blocked -> is_joined == false) {
-                blocked = 1;
+                //blocked = 1;
                 temp_blocked -> is_joined = true;
                 running_thread -> state = Blocked; //block the running thead.
                 queue_enqueue(blocked_queue, running_thread);

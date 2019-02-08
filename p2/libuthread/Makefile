@@ -1,24 +1,25 @@
 # Target library
 lib := libuthread.a
-CFLAGS := -Wall -Werror
-CC-FLAGS1 := gcc $(CFLAGS)
-CC-FLAGS2 = gcc $(CFLAGS)
 all: $(lib)
+targets := queue.o uthread.o preempt.o context.o
+CFLAGS += -Wall -Werror
 
 ## TODO: Phase 1.1
-queue.o: queue.h queue.c
-	gcc -Wall -Werror -c -o queue.o queue.c
 
-context.o: context.h context.c
-	gcc -Wall -Werror -c -o context.o context.c
+%.o: %.c context.h 
+	gcc -c $(CFLAGS) $a $<
 
-uthread.o: uthread.h uthread.c
-	gcc -Wall -Werror -c -o uthread.o uthread.c
+%.o: %.c uthread.h 
+	gcc -c $(CFLAGS) $a $<
 
-preempt.o: preempt.h preempt.c
-	gcc -Wall -Werror -c -o preempt.o preempt.c
+%.o: %.c preempt.h 
+	gcc -c $(CFLAGS) $a $<
 
-libuthread.a: queue.o context.o uthread.o preempt.o
-        ar rcs lib queue.o context.o uthread.o preempt.o
+%.o: %.c queue.h
+	gcc -c $(CFLAGS) $a $<
 
-clean: rm -f queue.o context.o uthread.o preempt.o
+libuthread.a: $(targets)
+	ar rcs $(lib) $^
+
+clean: 
+	rm -f $(targets)
