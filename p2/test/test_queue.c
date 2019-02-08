@@ -6,6 +6,29 @@
 #include "../libuthread/queue.h"
 #include "../libuthread/queue.c"
 
+static int inc_item(void *data, void *arg)
+{
+    int *a = (int*)data;
+    int inc = (int)(long)arg;
+
+    *a += inc;
+
+    return 0;
+}
+
+static int find_item(void *data, void *arg)
+{
+    int *a = (int*)data;
+    int match = (int)(long)arg;
+
+    if (*a == match)
+        return 1;
+
+    return 0;
+}
+
+
+
 void test_iterator(void)
 {
     queue_t q;

@@ -112,7 +112,7 @@ int queue_iterate(queue_t queue, queue_func_t func, void *arg, void **data)
 				return -1;
 			}
 			else{
-			//	data = curr;//data received the data item where iteration stoped
+				//*data = retVal;//data received the data item where iteration stoped
 				break;
 			}
 		}
