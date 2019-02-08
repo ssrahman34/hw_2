@@ -11,12 +11,14 @@ struct Node {
 
 struct queue {
     struct Node * front, * rear;
+    int length;
 };
 
 queue_t queue_create(void) {
     struct queue * queue = (struct queue * ) malloc(sizeof(struct queue));
-    queue - > front = NULL;
-    queue - > rear = NULL;
+    queue -> front = NULL;
+    queue -> rear = NULL;
+    queue->length = 0;
     return queue;
 }
 
@@ -24,10 +26,10 @@ int queue_destroy(queue_t queue) {
     if (queue == NULL || queue_length(queue) != 0) {
         return -1;
     }
-    struct Node * curr = queue - > front;
+    struct Node * curr = queue -> front;
     struct Node * next;
     while (curr != NULL) {
-        next = curr - > next;
+        next = curr -> next;
         free(curr);
         curr = next;
     } //free the nodes in the quque
@@ -40,29 +42,31 @@ int queue_enqueue(queue_t queue, void * data) {
         return -1;
     }
     struct Node * new_node = (struct Node * ) malloc(sizeof(struct Node));
-    new_node - > key = data;
-    new_node - > next = NULL;
+    new_node -> key = data;
+    new_node -> next = NULL;
 
-    if (queue - > rear == NULL) {
-        queue - > front = queue - > rear = new_node;
+    queue->length++;
+    if (queue -> rear == NULL) {
+        queue -> front = queue -> rear = new_node;
         return 0;
     }
-    queue - > rear - > next = new_node;
-    queue - > rear = new_node;
+    queue -> rear -> next = new_node;
+    queue -> rear = new_node;
     return 0;
 
 }
 
 int queue_dequeue(queue_t queue, void ** data) {
-    if (queue == NULL || data == NULL || queue_length(queue) == 0 || queue - > front == NULL) {
+    if (queue == NULL || data == NULL || queue_length(queue) == 0 || queue -> front == NULL) {
         return -1;
     }
 
-    * data = & (queue - > front - > key);
-    queue - > front = queue - > front - > next;
-    if (queue - > front == NULL) {
-        queue - > rear = NULL;
+    * data = & (queue -> front -> key);
+    queue -> front = queue -> front -> next;
+    if (queue -> front == NULL) {
+        queue -> rear = NULL;
     }
+    queue->length--;
     //free (queue->front);
     return 0;
 }
@@ -71,15 +75,16 @@ int queue_delete(queue_t queue, void * data) {
     if (queue == NULL || data == NULL) {
         return -1;
     }
-    struct Node * curr = queue - > front;
-    while (curr - > next != NULL) {
-        if (curr - > next - > key == data) {
-            struct Node * temp = curr - > next;
-            curr - > next = curr - > next - > next;
+    struct Node * curr = queue -> front;
+    while (curr -> next != NULL) {
+        if (curr -> next -> key == data) {
+            struct Node * temp = curr -> next;
+            curr -> next = curr -> next -> next;
+            queue->length--;
             free(temp); //delete
             return 0;
         }
-        curr = curr - > next;
+        curr = curr -> next;
     }
     return -1; //data was not found in queue
 }
@@ -88,7 +93,7 @@ int queue_iterate(queue_t queue, queue_func_t func, void * arg, void ** data) {
     if (queue == NULL || func == NULL) {
         return -1;
     }
-    struct Node * curr = queue - > front;
+    struct Node * curr = queue -> front;
     //void (*ptr)() = &func; //this is the function to call
     int retVal;
     while (curr != NULL) {
@@ -101,7 +106,7 @@ int queue_iterate(queue_t queue, queue_func_t func, void * arg, void ** data) {
                 break;
             }
         }
-        curr = curr - > next;
+        curr = curr -> next;
     }
     return 0;
 }
@@ -110,14 +115,9 @@ int queue_length(queue_t queue) {
     if (queue == NULL) {
         return -1;
     }
-    if (queue - > front == NULL) {
+    if (queue -> front == NULL) {
         return 0; //we have an empty queue
     }
-    int length = 1;
-    struct Node * curr = queue - > front;
-    while (curr != queue - > rear) {
-        length++;
-        curr = curr - > next;
-    }
-    return length;
+    
+    return queue->length;
 }
