@@ -34,9 +34,6 @@ void preempt_enable(void)
 //      sigaddset(set, SIGVTALRM);
         //sigemptyset(SIGVTALRM);
 }
-void handler(void){
-        printf("in handler!");
-}
 void preempt_start(void)
 {
         struct sigaction action;
