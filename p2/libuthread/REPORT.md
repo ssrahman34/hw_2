@@ -56,7 +56,8 @@ The context attribute is the context object of the specific thread that is
 assigned with the uthread_ctx_init function to initialize the thread. We then 
 enqueue the struct onto our ready queue and return the TID of the new thread.
 
-The overview of the yield function is to set aside our current running thread and
+The overview of the yield function is to set aside our current running thread 
+and
 instead take the next available thread in the queue. Our yield function goes 
 through our ready queue to find the next thread that can be executed. Upon 
 finding this thread, we dequeue it off the ready queue. We then change the state
@@ -70,5 +71,9 @@ unblock the parent thread and place it onto the ready queue. We then call the
 yield function on this ready thread.
 
 ##Phase 4
-Phase 4 is discussed in our readme file.
+The phase 4 event handler calls the uthread_yeild function everytime the 
+allocated time (100Hz or 10000ms ) is over. In a way this is ‘focing’ a 
+thread to yield and can be useful for threads that are not sharing the CPU 
+and yielding. The disable function disables the alarm by setting the seconds to
+0.
 
